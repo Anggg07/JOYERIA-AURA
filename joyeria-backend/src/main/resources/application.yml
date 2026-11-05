@@ -1,0 +1,129 @@
+server:
+  port: ${SERVER_PORT:8080}
+
+spring:
+  application:
+    name: joyeria-backend
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/joyeria}
+    username: ${DATABASE_USERNAME:joyeria_user}
+    password: ${DATABASE_PASSWORD:joyeria_password}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        default_batch_fetch_size: 30
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+    time-zone: America/Bogota
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 20MB
+  mail:
+    host: ${MAIL_HOST:}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+jwt:
+  secret: ${JWT_SECRET}
+  expiration: ${JWT_EXPIRATION:86400000}
+  refresh-expiration: ${REFRESH_JWT_EXPIRATION:604800000}
+
+app:
+  frontend-url: ${FRONTEND_URL:http://localhost:5173}
+  upload-dir: ${UPLOAD_DIR:uploads}
+  email:
+    enabled: ${EMAIL_ENABLED:false}
+    log-link: ${EMAIL_LOG_LINK:false}
+  security:
+    # IPs o CIDR (ej. 172.16.0.0/12) de proxies autorizados a enviar X-Forwarded-For.
+    # Vacío = nunca confiar en X-Forwarded-For (se usa la IP real de conexión).
+    trusted-proxies: ${TRUSTED_PROXIES:}
+
+payment:
+  provider: ${PAYMENT_PROVIDER:sandbox}
+  currency: ${PAYMENT_CURRENCY:COP}
+  mercado-pago:
+    public-key: ${MERCADOPAGO_PUBLIC_KEY:}
+    access-token: ${MERCADOPAGO_ACCESS_TOKEN:}
+    webhook-secret: ${MERCADOPAGO_WEBHOOK_SECRET:}
+    notification-url: ${MERCADOPAGO_NOTIFICATION_URL:}
+
+email:
+  from: ${EMAIL_FROM:no-reply@aurajoyeria.com}
+
+cloudinary:
+  cloud-name: ${CLOUDINARY_CLOUD_NAME:}
+  api-key: ${CLOUDINARY_API_KEY:}
+  api-secret: ${CLOUDINARY_API_SECRET:}
+
+push:
+  vapid:
+    public-key: ${PUSH_VAPID_PUBLIC_KEY:}
+    private-key: ${PUSH_VAPID_PRIVATE_KEY:}
+    subject: ${PUSH_VAPID_SUBJECT:mailto:admin@aurajoyeria.com}
+
+ai:
+  # Asistente de compras. Sin proveedor configurado funciona en modo determinista
+  # (interpreta la intención por reglas y consulta productos reales de PostgreSQL).
+  enabled: ${AI_ENABLED:false}
+  provider: ${AI_PROVIDER:openai-compatible}
+  api-key: ${AI_API_KEY:}
+  base-url: ${AI_BASE_URL:https://api.openai.com/v1}
+  model: ${AI_MODEL:gpt-4o-mini}
+  timeout-seconds: ${AI_TIMEOUT_SECONDS:15}
+  max-message-length: ${AI_MAX_MESSAGE_LENGTH:500}
+  max-products: ${AI_MAX_PRODUCTS:4}
+  max-candidates: ${AI_MAX_CANDIDATES:50}
+  compose-response: ${AI_COMPOSE_RESPONSE:true}
+  temperature: ${AI_TEMPERATURE:0.2}
+  # Asistente interno del panel de administración (solo rol ADMIN). Puede usar
+  # su propia API key/modelo; si se dejan vacíos, hereda los valores de arriba.
+  admin:
+    enabled: ${AI_ADMIN_ENABLED:true}
+    api-key: ${AI_ADMIN_API_KEY:}
+    base-url: ${AI_ADMIN_BASE_URL:}
+    model: ${AI_ADMIN_MODEL:}
+    temperature: ${AI_ADMIN_TEMPERATURE:0.3}
+    timeout-seconds: ${AI_ADMIN_TIMEOUT_SECONDS:0}
+    max-message-length: ${AI_ADMIN_MAX_MESSAGE_LENGTH:600}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: never
+  health:
+    # El indicador de salud de SMTP solo se evalúa si el envío de correo está habilitado
+    # (evita que /actuator/health reporte DOWN cuando el correo es opcional).
+    mail:
+      enabled: ${EMAIL_ENABLED:false}
+
+logging:
+  level:
+    org.springframework.security: INFO
+    com.joyeria: ${LOG_LEVEL:INFO}

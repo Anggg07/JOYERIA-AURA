@@ -1,0 +1,24 @@
+# Perfil de producción.
+# Actívalo con SPRING_PROFILES_ACTIVE=prod (lo hace docker-compose.yml).
+# No incluye secretos: todos llegan por variables de entorno.
+logging:
+  level:
+    root: INFO
+    com.joyeria: ${LOG_LEVEL:INFO}
+    org.springframework: WARN
+    org.springframework.security: WARN
+    org.hibernate: WARN
+    org.flywaydb: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%thread] %logger{36} - %msg%n"
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
+      probes:
+        enabled: true

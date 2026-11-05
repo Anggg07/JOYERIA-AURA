@@ -1,0 +1,191 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Light — warm ivory (#F8F5EC) / stone (#F3EFE6) with subtle gold (#C9A227) */
+    --background: 46 43% 95%;
+    --background-warm: 40 35% 93%;
+    --background-light: 40 20% 90%;
+    --surface: 0 0% 100%;
+    --surface-muted: 42 30% 94%;
+    --surface-elevated: 40 15% 90%;
+
+    --foreground: 37 14% 14%;
+    /* Secondary text #71695F */
+    --foreground-muted: 33 6% 41%;
+    --foreground-faint: 37 7% 48%;
+
+    --border: 40 16% 86%;
+    --ink: 37 12% 12%;
+    --ink-soft: 37 10% 8%;
+
+    --primary: 46 68% 47%;
+    --primary-light: 45 65% 52%;
+    --primary-dark: 44 72% 42%;
+    --accent-green: 114 13% 50%;
+    --accent-dark: 128 28% 29%;
+
+    --font-serif: 'Playfair Display', 'Cormorant Garamond', serif;
+    --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+
+    color-scheme: light;
+  }
+
+  .dark {
+    /* Warm charcoal "espresso" night palette */
+    --background: 40 6% 6%;
+    --background-warm: 40 6% 8%;
+    --background-light: 40 5% 10%;
+    --surface: 38 5% 11%;
+    --surface-muted: 37 4% 14%;
+    --surface-elevated: 36 4% 17%;
+
+    --foreground: 40 22% 93%;
+    --foreground-muted: 40 6% 74%;
+    --foreground-faint: 40 4% 58%;
+
+    --border: 37 4% 21%;
+    --ink: 0 0% 4%;
+    --ink-soft: 0 0% 7%;
+
+    --primary: 46 78% 56%;
+    --primary-light: 45 70% 62%;
+    --primary-dark: 44 72% 50%;
+    --accent-green: 114 20% 66%;
+    --accent-dark: 114 20% 42%;
+
+    color-scheme: dark;
+  }
+
+  * {
+    border-color: hsl(var(--border));
+  }
+
+  body {
+    font-family: var(--font-sans);
+    color: hsl(var(--foreground-muted));
+    background-color: hsl(var(--background));
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    line-height: 1.6;
+    overflow-x: clip;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-serif);
+    color: hsl(var(--foreground));
+    font-weight: 500;
+  }
+
+  img {
+    max-width: 100%;
+    height: auto;
+  }
+
+  a {
+    text-decoration: none;
+    color: inherit;
+  }
+
+  input, textarea, select {
+    background-color: hsl(var(--surface));
+    color: hsl(var(--foreground));
+  }
+
+  input::placeholder, textarea::placeholder {
+    color: hsl(var(--foreground-faint));
+  }
+
+  ::selection {
+    background-color: hsl(var(--primary) / 0.28);
+  }
+
+  :focus-visible {
+    outline: 2px solid hsl(var(--primary));
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+}
+
+@layer utilities {
+  .text-primary { color: hsl(var(--primary)); }
+  .text-accent { color: hsl(var(--accent-green)); }
+  .bg-warm { background-color: hsl(var(--background-warm)); }
+  .bg-light { background-color: hsl(var(--background-light)); }
+  .font-serif { font-family: var(--font-serif); }
+  .font-sans { font-family: var(--font-sans); }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: hsl(var(--background));
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--primary) / 0.65);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--primary));
+}
+
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ===== 3D turntable (vitrina giratoria) ===== */
+@keyframes tt-spin-photo {
+  to { transform: rotateY(360deg); }
+}
+
+@keyframes tt-spin-platter {
+  to { transform: rotateX(74deg) rotateZ(360deg); }
+}
+
+@keyframes tt-spin-badge {
+  to { transform: rotate(360deg); }
+}
+
+.tt-spin-photo {
+  animation: tt-spin-photo 26s linear infinite;
+  will-change: transform;
+}
+
+.tt-spin-platter {
+  animation: tt-spin-platter 16s linear infinite;
+  will-change: transform;
+}
+
+.tt-spin-badge {
+  animation: tt-spin-badge 10s linear infinite;
+}
+
+.group:hover .tt-spin-photo,
+.group:hover .tt-spin-platter {
+  animation-play-state: paused;
+}

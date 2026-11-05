@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /cuenta
+Disallow: /checkout
+
+Sitemap: https://aurajoyeria.com/sitemap.xml

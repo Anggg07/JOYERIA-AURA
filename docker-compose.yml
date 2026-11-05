@@ -1,0 +1,99 @@
+# Producción: solo el proxy TLS (Caddy) publica puertos (80/443).
+# PostgreSQL, backend y frontend quedan en la red interna de Docker.
+#
+# Producción (con TLS):   docker compose --profile tls up -d --build
+# Desarrollo:             docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+# Los secretos se leen del archivo .env (ver .env.example).
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DATABASE_NAME:-joyeria}
+      POSTGRES_USER: ${DATABASE_USERNAME:-joyeria_user}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:?define DATABASE_PASSWORD en .env}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DATABASE_USERNAME:-joyeria_user} -d ${DATABASE_NAME:-joyeria}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - joyeria
+
+  backend:
+    build: ./joyeria-backend
+    restart: unless-stopped
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-prod}
+      DATABASE_URL: jdbc:postgresql://postgres:5432/${DATABASE_NAME:-joyeria}
+      DATABASE_USERNAME: ${DATABASE_USERNAME:-joyeria_user}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD:?define DATABASE_PASSWORD en .env}
+      JWT_SECRET: ${JWT_SECRET:?define JWT_SECRET en .env}
+      JWT_EXPIRATION: ${JWT_EXPIRATION:-86400000}
+      FRONTEND_URL: ${FRONTEND_URL:?define FRONTEND_URL en .env}
+      SERVER_PORT: 8080
+      UPLOAD_DIR: /app/uploads
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      # Subred de Docker de la que se confía X-Forwarded-For (proxy nginx/Caddy)
+      TRUSTED_PROXIES: ${TRUSTED_PROXIES:-172.16.0.0/12}
+    volumes:
+      - uploads:/app/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:8080/actuator/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+    networks:
+      - joyeria
+
+  frontend:
+    build: ./joyeria-frontend
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    networks:
+      - joyeria
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    profiles: ["tls"]
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      DOMAIN: ${DOMAIN:-localhost}
+      ACME_EMAIL: ${ACME_EMAIL:-admin@localhost}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - frontend
+    networks:
+      - joyeria
+
+volumes:
+  postgres_data:
+  uploads:
+  caddy_data:
+  caddy_config:
+
+networks:
+  joyeria:
+    driver: bridge

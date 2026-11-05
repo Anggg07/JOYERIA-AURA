@@ -1,0 +1,12 @@
+{
+	# Correo para registro ACME (Let's Encrypt). Configúralo vía ACME_EMAIL.
+	email {$ACME_EMAIL}
+}
+
+# Caddy obtiene y renueva el certificado TLS automáticamente para DOMAIN.
+# Para un dominio real: DOMAIN=tudominio.com ACME_EMAIL=tu@correo.com
+# Para pruebas locales:  DOMAIN=localhost (Caddy usa su CA interna)
+{$DOMAIN} {
+	encode gzip
+	reverse_proxy frontend:80
+}

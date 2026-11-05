@@ -1,0 +1,18 @@
+# Override de DESARROLLO. Uso:
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+# Publica puertos para acceso local y activa el perfil Spring `dev` (datos de prueba).
+# No levanta Caddy (perfil `tls`), por lo que se accede por HTTP.
+services:
+  postgres:
+    ports:
+      - "5432:5432"
+
+  backend:
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+    ports:
+      - "8080:8080"
+
+  frontend:
+    ports:
+      - "5173:80"
